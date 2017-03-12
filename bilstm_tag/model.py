@@ -36,7 +36,7 @@ def load_vocab(vocab_file):
     return vocab
 
 class BiLSTMTagger(chainer.Chain):
-    def __init__(self, n_vocab, n_class, n_emb=100, n_hid=200):
+    def __init__(self, n_vocab, n_class, n_emb=200, n_hid=100):
 
         super(BiLSTMTagger, self).__init__(
                 embed=L.EmbedID(n_vocab, n_emb),
@@ -53,9 +53,11 @@ class BiLSTMTagger(chainer.Chain):
                 o=L.Linear(n_hid, n_class),
                 )
 
-#        for param in self.params():
+        mu = 0.
+        sigma = 0.05
+        for param in self.params():
 #            param.data[...] = np.random.uniform(-0.1, 0.1, param.data.shape)
-#            param.data[...] = np.random.normal(-0.1, 0.1, param.data.shape)
+            param.data[...] = np.random.normal(mu, sigma, param.data.shape)
 
         self.n_hid = n_hid
 
@@ -67,7 +69,6 @@ class BiLSTMTagger(chainer.Chain):
         hs = []
         for word in words:
             e = self.embed(word)
-
             lstm_in = self.xh(e) + self.hh(h)
             c, h = F.lstm(c, lstm_in)
             hs.append(h)
@@ -79,7 +80,6 @@ class BiLSTMTagger(chainer.Chain):
         hs_b = []
         for word in reversed(words):
             e = self.embed(word)
-
             lstm_in = self.xh_b(e) + self.hh_b(h)
             c, h = F.lstm(c, lstm_in)
             hs_b.append(h)
